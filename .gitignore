@@ -1,0 +1,8 @@
+*.db
+species_classifier.pth
+__pycache__/
+
+.DS_Store
+.env
+.venv/
+config.json
