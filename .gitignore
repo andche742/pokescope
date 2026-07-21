@@ -2,6 +2,8 @@
 cv/weights/*
 !cv/weights/.gitkeep
 __pycache__/
+.ipynb_checkpoints/
+pokemon.json
 
 .DS_Store
 .env

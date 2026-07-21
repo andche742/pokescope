@@ -1,0 +1,4 @@
+[tool.pytest.ini_options]
+markers = [
+    "integration: needs a real, reachable database (deselect with -m 'not integration')",
+]
