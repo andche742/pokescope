@@ -1,3 +1,5 @@
 mss==10.2.0
 numpy==2.5.0
 opencv-python==4.13.0.92
+mysql-connector-python==9.7.0
+python-dotenv==1.2.2
