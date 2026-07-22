@@ -19,7 +19,7 @@ def calc_stats(attack_iv, defense_iv, stamina_iv, pokemon=None, id=None, level=N
     stamina = (pokemon.stamina + stamina_iv) * cpm
     cp = max(10, math.floor(attack * defense**0.5 * stamina**0.5 / 10))
 
-    return cp, attack, defense, stamina
+    return cp, attack, defense, math.floor(stamina)
 
 def calc_level(cp, attack_iv, defense_iv, stamina_iv, pokemon=None, id=None):
     if pokemon == None:
