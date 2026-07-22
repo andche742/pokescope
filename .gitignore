@@ -3,7 +3,9 @@ cv/weights/*
 !cv/weights/.gitkeep
 __pycache__/
 .ipynb_checkpoints/
-pokemon.json
+
+pokemon_stats.json
+pokemon_evolutions.json
 
 .DS_Store
 .env
