@@ -76,6 +76,58 @@ def parse_evolution_rows(data, id_lookup):
     return rows, unresolved
 
 
+def load_megas(path):
+    with open(path) as f:
+        data = json.load(f)
+    return data
+
+
+# mega_pokemon.json's "form" describes the mega variant, not the base pokemon --
+# it is "Normal" for the 46 species with a single mega, and "X"/"Y" for
+# charizard. Stored under distinct form labels so megas never collide with their
+# base pokemon's own (number, form) key.
+MEGA_FORM_LABELS = {"Normal": "Mega", "X": "Mega_x", "Y": "Mega_y"}
+
+
+def mega_form_label(form):
+    return MEGA_FORM_LABELS.get(form, f"Mega_{form.lower()}")
+
+
+def parse_mega_rows(data):
+    """Returns rows ready for db.repository.insert_pokemon_stats:
+    (number, name, stamina, attack, defense, form)
+    """
+    return [
+        (
+            entry["pokemon_id"],
+            entry["mega_name"],
+            entry["stats"]["base_stamina"],
+            entry["stats"]["base_attack"],
+            entry["stats"]["base_defense"],
+            mega_form_label(entry["form"]),
+        )
+        for entry in data
+    ]
+
+
+def parse_mega_evolution_rows(data, id_lookup):
+    """Resolves (from_id, to_id) edges linking each base pokemon to its mega.
+
+    Energy requirements are ignored -- the edge exists so the evolution walk can
+    report a mega's potential stats, not to model whether it can be afforded.
+    """
+    rows = []
+    unresolved = []
+    for entry in data:
+        from_id = id_lookup.get((entry["pokemon_id"], "Normal"))
+        to_id = id_lookup.get((entry["pokemon_id"], mega_form_label(entry["form"])))
+        if from_id is None or to_id is None:
+            unresolved.append((entry["pokemon_id"], entry["mega_name"]))
+            continue
+        rows.append((from_id, to_id))
+    return rows, unresolved
+
+
 if __name__ == "__main__":
     data = load_stats("pokemon_stats.json")
     rows = parse_stats_rows(data)

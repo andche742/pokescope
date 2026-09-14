@@ -46,20 +46,29 @@ def calc_level(cp, attack_iv, defense_iv, stamina_iv, pokemon=None, id=None):
 
     return levels[idx]
 
-def calc_max_level(cp_limit, attack_iv, defense_iv, stamina_iv, pokemon=None, id=None):
+def calc_max_level(cp_limit, attack_iv, defense_iv, stamina_iv, pokemon=None, id=None, cpm_table=None):
     if pokemon == None:
         if id == None:
             return None
         pokemon = get_pokemon(id)
 
-    levels, multipliers = get_cpm_table()
-    stats = [calc_stats(attack_iv, defense_iv, stamina_iv, pokemon=pokemon, cpm=m) for m in multipliers]
-    cps = [s[0] for s in stats]
+    if cpm_table == None:
+        cpm_table = get_cpm_table()
+    levels, multipliers = cpm_table
 
-    idx = bisect.bisect_right(cps, cp_limit) - 1
+    # cp is monotonic in the multiplier, so bisect on a computed cp instead of
+    # building all ~101 of them -- ~8 calc_stats calls per spread rather than 101,
+    # which matters when the pvp ranker sweeps 4096 spreads per species
+    idx = bisect.bisect_right(
+        multipliers,
+        cp_limit,
+        key=lambda m: calc_stats(attack_iv, defense_iv, stamina_iv, pokemon=pokemon, cpm=m)[0],
+    ) - 1
     if idx < 0:
         return None
 
-    cp, attack, defense, stamina = stats[idx]
+    cp, attack, defense, stamina = calc_stats(
+        attack_iv, defense_iv, stamina_iv, pokemon=pokemon, cpm=multipliers[idx]
+    )
     product = attack * defense * stamina
     return levels[idx], cp, attack, defense, stamina, product
